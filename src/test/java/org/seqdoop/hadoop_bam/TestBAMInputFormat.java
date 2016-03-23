@@ -85,6 +85,19 @@ public class TestBAMInputFormat {
   }
 
   @Test
+  public void testNoReadsInFirstSplit() throws Exception {
+    Configuration conf = new Configuration();
+    String bam = getClass().getClassLoader().getResource("no-reads-in-first-split.bam").getFile();
+    conf.set("mapred.input.dir", bam);
+    taskAttemptContext = ContextUtil.newTaskAttemptContext(conf, mock(TaskAttemptID.class));
+    jobContext = ContextUtil.newJobContext(conf, taskAttemptContext.getJobID());
+    // throws IOException: 'file:/.../no-reads-in-first-split.bam': no reads in first split: bad BAM file or tiny split size?
+    //jobContext.getConfiguration().setInt(FileInputFormat.SPLIT_MAXSIZE, 40000);
+    BAMInputFormat inputFormat = new BAMInputFormat();
+    List<InputSplit> splits = inputFormat.getSplits(jobContext);
+  }
+
+  @Test
   public void testDontKeepPairedReadsTogether() throws Exception {
     completeSetup(false, null);
     jobContext.getConfiguration().setInt(FileInputFormat.SPLIT_MAXSIZE, 40000);
